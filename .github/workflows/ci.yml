@@ -1,0 +1,42 @@
+name: CI
+
+on:
+  push:
+    branches:
+      - main
+  pull_request:
+    branches:
+      - main
+
+jobs:
+  main:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      # Thêm bước này để cài đặt pnpm
+      - name: Set up pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 9 # Cài đặt phiên bản pnpm mới nhất
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'pnpm'
+
+      - name: Install dependencies
+        run: pnpm install
+
+      - name: Run Lint for Affected Projects
+        run: npx nx affected -t lint --parallel=3
+
+      - name: Run Tests for Affected Projects
+        run: npx nx affected -t test --parallel=3
+
+      - name: Build Affected Projects
+        run: npx nx affected -t build --parallel=3
